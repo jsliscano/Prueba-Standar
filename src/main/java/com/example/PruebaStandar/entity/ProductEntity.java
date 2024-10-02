@@ -1,4 +1,5 @@
 package com.example.PruebaStandar.entity;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,10 +14,8 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-
 @Entity
 @Table(name = "producto")
-
 public class ProductEntity {
 
     @Id
@@ -37,18 +36,9 @@ public class ProductEntity {
     @JoinColumn(name = "usuario_registro", nullable = false)
     private UserEntity usuarioRegistro;
 
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_modificacion")
     private UserEntity usuarioModificacion;
 
     private LocalDate fechaModificacion;
 }
-
-
-
-
-
-
-
-

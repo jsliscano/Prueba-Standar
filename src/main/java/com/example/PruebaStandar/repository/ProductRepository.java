@@ -9,10 +9,14 @@ import java.util.Optional;
 
 @Repository
 public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
+
+
+    boolean existsByNombre(String nombre);
+
+    List<ProductEntity> findByUsuarioRegistro_Id(Long id);
+
     Optional<ProductEntity> findByNombre(String nombre);
-    boolean existsByName(String nombre);
 
-    List<ProductEntity> findByUserId(Long userId);
 
-    List<ProductEntity> findByName(String name);
 }
+
