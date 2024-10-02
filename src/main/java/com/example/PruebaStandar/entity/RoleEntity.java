@@ -1,5 +1,4 @@
 package com.example.PruebaStandar.entity;
-
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,7 +19,6 @@ public class RoleEntity {
 
     @Column(nullable = false)
     private String nombreCargo;
-
 }
 
 

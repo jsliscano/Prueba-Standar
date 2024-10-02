@@ -1,6 +1,4 @@
 package com.example.PruebaStandar.entity;
-
-
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,7 +15,6 @@ import java.time.LocalDate;
 @Entity
 @Table(name = "usuario")
 public class UserEntity {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

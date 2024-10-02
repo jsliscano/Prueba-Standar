@@ -1,11 +1,9 @@
 package com.example.PruebaStandar.entity;
-
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.PastOrPresent;
@@ -37,14 +35,14 @@ public class ProductEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_registro", nullable = false)
-    private UserEntity usuarioRegistro; // Usuario que realiza el registro
+    private UserEntity usuarioRegistro;
 
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_modificacion")
-    private UserEntity usuarioModificacion; // Usuario que modifica la mercancía
+    private UserEntity usuarioModificacion;
 
-    private LocalDate fechaModificacion; // Fecha de modificación de la mercancía
+    private LocalDate fechaModificacion;
 }
 
 
