@@ -9,4 +9,6 @@ import java.util.Optional;
 @Repository
 public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
     Optional<ProductEntity> findByNombre(String nombre);
+    boolean existsByName(String nombre);
+
 }
