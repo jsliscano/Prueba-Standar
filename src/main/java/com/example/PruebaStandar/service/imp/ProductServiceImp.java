@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.List;
 
 
 @AllArgsConstructor
@@ -58,7 +59,45 @@ public class ProductServiceImp implements ProductService {
         return productRepository.save(existingProduct);
     }
 
+    @Override
+    public void deleteProduct(Long id, Long userId) throws ProductException {
+            ProductEntity existingProduct = productRepository.findById(id)
+                    .orElseThrow(() -> new ProductException("Producto no encontrado."));
 
+            if (!existingProduct.getUsuarioRegistro().getId().equals(userId)) {
+                throw new ProductException("No tienes permiso para eliminar este producto.");
+            }
 
+            productRepository.delete(existingProduct);
+    }
+
+    @Override
+    public List<ProductEntity> getAllProducts() {
+        return productRepository.findAll();
+
+    }
+
+    @Override
+    public List<ProductEntity> searchProductsByName(String name) throws ProductException {
+            if (name == null || name.isEmpty()) {
+                throw new ProductException("El nombre no puede estar vacío.");
+            }
+            return productRepository.findByName(name);
+        }
+
+    @Override
+    public List<ProductEntity> searchProductsByUser(Long userId) throws ProductException {
+        if (userId == null) {
+            throw new ProductException("El ID del usuario no puede ser nulo.");
+        }
+        return productRepository.findByUserId(userId);
+    }
 }
+
+
+
+
+
+
+
 
