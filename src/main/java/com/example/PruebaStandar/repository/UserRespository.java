@@ -8,5 +8,5 @@ import java.util.Optional;
 
 @Repository
 public interface UserRespository extends JpaRepository<UserEntity,Long> {
-    Optional<UserEntity> findByNumeroIdentificacion(String numeroIdentificacion);
+    Optional<UserEntity> findByNombre(String nombre);
 }

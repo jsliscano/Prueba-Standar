@@ -1,14 +1,18 @@
 package com.example.PruebaStandar.service.imp;
 
+import com.example.PruebaStandar.dto.ProductRequestDto;
 import com.example.PruebaStandar.entity.ProductEntity;
 import com.example.PruebaStandar.entity.UserEntity;
 import com.example.PruebaStandar.excepciones.ProductException;
+import com.example.PruebaStandar.excepciones.ProductNotFoundException;
 import com.example.PruebaStandar.repository.ProductRepository;
+import com.example.PruebaStandar.repository.UserRespository;
 import com.example.PruebaStandar.service.ProductService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,83 +21,96 @@ import java.util.Optional;
 public class ProductServiceImp implements ProductService {
 
     private final ProductRepository productRepository;
+    private final UserRespository userRespository;
 
     @Override
-    public ProductEntity createProduct(ProductEntity product) throws ProductException {
-        if (productRepository.existsByNombre(product.getNombre())) {
+    public ProductEntity createProduct(ProductRequestDto productRequestDto) throws ProductException {
+        if (productRepository.existsByNombre(productRequestDto.getNombre())) {
             throw new ProductException("El nombre del producto ya existe.");
         }
 
-        if (product.getCantidad() < 0) { // Cambiado a < 0 para permitir 0
+        if (productRequestDto.getCantidad() < 0) { // Cambiado a < 0 para permitir 0
             throw new ProductException("La cantidad debe ser un número entero no negativo.");
         }
 
-        if (product.getFechaIngreso() == null || product.getFechaIngreso().isAfter(LocalDate.now())) {
+        if (productRequestDto.getFechaIngreso() == null || productRequestDto.getFechaIngreso().isAfter(LocalDate.now())) {
             throw new ProductException("La fecha de ingreso debe ser hoy o en el pasado.");
         }
 
-        return productRepository.save(product);
+        Optional<UserEntity> userEntity = userRespository.findByNombre(productRequestDto.getUserNameRegister());
+
+
+        ProductEntity productEntity = ProductEntity
+                .builder()
+                .nombre(productRequestDto.getNombre())
+                .cantidad(productRequestDto.getCantidad())
+                .fechaIngreso(productRequestDto.getFechaIngreso())
+                .userEntity(userEntity.get())
+                .createdAt(ZonedDateTime.now())
+                .createdBy(productRequestDto.getUserNameRegister())
+                .build();
+
+
+        return productRepository.save(productEntity);
+
     }
 
     @Override
-    public ProductEntity updateProduct(Long id, ProductEntity product, UserEntity user) throws ProductException {
+    public ProductEntity updateProduct(Long id,ProductRequestDto productRequestDto) throws ProductException {
         ProductEntity existingProduct = productRepository.findById(id)
-                .orElseThrow(() -> new ProductException("Producto no encontrado."));
+                .orElseThrow(() -> new ProductException("Producto no encontrado con id " + id));
 
-        if (product.getCantidad() < 0) { // Cambiado a < 0 para permitir 0
+        if (productRequestDto.getCantidad() < 0) {
             throw new ProductException("La cantidad debe ser un número entero no negativo.");
         }
 
-        if (product.getFechaIngreso() == null || product.getFechaIngreso().isAfter(LocalDate.now())) {
+        if (productRequestDto.getFechaIngreso() == null || productRequestDto.getFechaIngreso().isAfter(LocalDate.now())) {
             throw new ProductException("La fecha de ingreso debe ser hoy o en el pasado.");
         }
 
-        existingProduct.setNombre(product.getNombre());
-        existingProduct.setCantidad(product.getCantidad());
-        existingProduct.setFechaIngreso(product.getFechaIngreso());
-        existingProduct.setUsuarioModificacion(user);
-        existingProduct.setFechaModificacion(LocalDate.now());
+        Optional<UserEntity> userEntity = userRespository.findByNombre(productRequestDto.getUserNameRegister());
+
+        existingProduct.setNombre(productRequestDto.getNombre());
+        existingProduct.setCantidad(productRequestDto.getCantidad());
+        existingProduct.setFechaIngreso(productRequestDto.getFechaIngreso());
+        existingProduct.setUpdatedAt(ZonedDateTime.now());
+        existingProduct.setUpdatedBy(productRequestDto.getUserNameRegister());
+
 
         return productRepository.save(existingProduct);
     }
 
     @Override
-    public void deleteProduct(Long id, Long userId) throws ProductException {
-        ProductEntity existingProduct = productRepository.findById(id)
-                .orElseThrow(() -> new ProductException("Producto no encontrado."));
+    public void deleteProduct(Long id, String username) throws ProductException {
+        ProductEntity product = productRepository.findById(id)
+                .orElseThrow(() -> new ProductException("Producto no encontrado"));
 
-        if (!existingProduct.getUsuarioRegistro().getId().equals(userId)) {
-            throw new ProductException("No estás autorizado para eliminar este producto.");
-        }
-
-        productRepository.delete(existingProduct);
-    }
-
-    @Override
-    public List<ProductEntity> getAllProducts() {
-        return productRepository.findAll();
-    }
-
-    @Override
-    public List<ProductEntity> searchProductsByName(String name) throws ProductException {
-        if (name == null || name.isEmpty()) {
-            throw new ProductException("El nombre no puede estar en blanco.");
-        }
-
-        Optional<ProductEntity> optionalProduct = productRepository.findByNombre(name);
-
-        if (optionalProduct.isPresent()) {
-            return List.of(optionalProduct.get());
+        if (product.getCreatedBy() != null && product.getCreatedBy().equals(username)) {
+            productRepository.delete(product);
         } else {
-            throw new ProductException("No se encontraron productos con el nombre: " + name);
+            throw new ProductException("No tienes permiso para eliminar este producto.");
         }
     }
 
+
     @Override
-    public List<ProductEntity> searchProductsByUser(Long userId) throws ProductException {
-        if (userId == null) {
-            throw new ProductException("El ID de usuario no puede ser nulo.");
+    public ProductEntity findByNombre(String nombre) {
+        Optional<ProductEntity> products = productRepository.findByNombreContainingIgnoreCase(nombre);
+        if (products.isEmpty()) {
+            throw new ProductNotFoundException("No se encontraron productos con el nombre: " + nombre);
         }
-        return productRepository.findByUsuarioRegistro_Id(userId);
+        return products.get();
     }
+
+    @Override
+    public List<ProductEntity> findByFechaIngreso(LocalDate fechaIngreso) {
+        List<ProductEntity> products = productRepository.findByFechaIngreso(fechaIngreso);
+        if (products.isEmpty()) {
+            throw new ProductNotFoundException("No se encontraron productos con la fecha de ingreso: " + fechaIngreso);
+        }
+        return products;
+    }
+
 }
+
+

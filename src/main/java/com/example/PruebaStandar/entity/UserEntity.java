@@ -21,6 +21,8 @@ public class UserEntity {
 
     private String tipoIdentificacion;
 
+    private Integer edad;
+
     @Column (name = "numero_identificacion", unique = true, nullable = false)
     @NotBlank(message = "El número de identificación no puede estar vacío")
     private String numeroIdentificacion;

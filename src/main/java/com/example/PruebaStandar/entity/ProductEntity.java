@@ -9,6 +9,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.PastOrPresent;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 
 @Data
 @AllArgsConstructor
@@ -33,12 +34,15 @@ public class ProductEntity {
     private LocalDate fechaIngreso;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "usuario_registro", nullable = false)
-    private UserEntity usuarioRegistro;
+    @JoinColumn(name = "usuario_id", nullable = false)
+    private UserEntity userEntity;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "usuario_modificacion")
-    private UserEntity usuarioModificacion;
 
-    private LocalDate fechaModificacion;
+    private ZonedDateTime createdAt;
+    private String createdBy;
+
+
+    private ZonedDateTime updatedAt;
+    private String updatedBy;
+
 }

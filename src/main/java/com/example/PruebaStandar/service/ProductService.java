@@ -1,25 +1,26 @@
 package com.example.PruebaStandar.service;
 
+import com.example.PruebaStandar.dto.ProductRequestDto;
 import com.example.PruebaStandar.entity.ProductEntity;
-import com.example.PruebaStandar.entity.UserEntity;
 import com.example.PruebaStandar.excepciones.ProductException;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface ProductService {
 
-    ProductEntity createProduct(ProductEntity product) throws ProductException;
+    ProductEntity createProduct(ProductRequestDto productRequestDto) throws ProductException;
 
-    ProductEntity updateProduct(Long id, ProductEntity product, UserEntity user) throws ProductException;
+    ProductEntity updateProduct(Long id, ProductRequestDto productRequestDto) throws ProductException;
 
-    void deleteProduct(Long id, Long userId) throws ProductException;
+    void deleteProduct(Long id, String username) throws ProductException;
 
-    List<ProductEntity> getAllProducts();
+    ProductEntity findByNombre(String nombre);
 
-    List<ProductEntity> searchProductsByName(String name) throws ProductException;
+    List<ProductEntity> findByFechaIngreso(LocalDate fechaIngreso);
 
-    List<ProductEntity> searchProductsByUser(Long userId) throws ProductException;
 }
+
 
 
 

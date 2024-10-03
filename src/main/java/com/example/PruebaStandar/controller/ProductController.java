@@ -1,7 +1,9 @@
 package com.example.PruebaStandar.controller;
 
+import com.example.PruebaStandar.dto.ProductDataDto;
+import com.example.PruebaStandar.dto.ProductRequestDto;
+import com.example.PruebaStandar.dto.ProductResponseDto;
 import com.example.PruebaStandar.entity.ProductEntity;
-import com.example.PruebaStandar.entity.UserEntity;
 import com.example.PruebaStandar.excepciones.ProductException;
 import com.example.PruebaStandar.service.ProductService;
 import lombok.AllArgsConstructor;
@@ -9,72 +11,108 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @AllArgsConstructor
+
 @RestController
 @RequestMapping("/api/products")
-
 public class ProductController {
-
     private final ProductService productService;
 
     @PostMapping("/save")
-    public ResponseEntity<ProductEntity> createProduct(@RequestBody ProductEntity product) {
+    public ResponseEntity<ProductResponseDto> createProduct(@RequestBody ProductRequestDto productRequestDto) {
         try {
-            ProductEntity createdProduct = productService.createProduct(product);
-            return new ResponseEntity<>(createdProduct, HttpStatus.CREATED);
+            ProductEntity createdProduct = productService.createProduct(productRequestDto);
+
+            ProductDataDto productDtoData  = ProductDataDto
+                    .builder()
+                    .nombre(createdProduct.getNombre())
+                    .cantidad(createdProduct.getCantidad())
+                    .fechaIngreso(createdProduct.getFechaIngreso())
+                    .build();
+
+            ProductResponseDto productResponseDto =
+                    ProductResponseDto
+                            .builder()
+                            .code("200")
+                            .data(productDtoData)
+                            .build();
+
+            return new ResponseEntity<>(productResponseDto, HttpStatus.CREATED);
         } catch (ProductException e) {
-            return ResponseEntity.badRequest().body(null);
+            return ResponseEntity.badRequest().body(null); // Puedes cambiar null por un mensaje de error
         }
     }
 
-    @PutMapping("/update/{id}")
-    public ResponseEntity<ProductEntity> updateProduct(@PathVariable Long id, @RequestBody ProductEntity product, @RequestParam Long userId) {
-        try {
-            UserEntity user = new UserEntity();
-            user.setId(userId);
 
-            ProductEntity updatedProduct = productService.updateProduct(id, product, user);
-            return new ResponseEntity<>(updatedProduct, HttpStatus.OK);
-        } catch (ProductException e) {
-            return ResponseEntity.badRequest().body(null);
-        }
+    @PutMapping("/actualizar/{id}")
+        public ResponseEntity<ProductResponseDto> updateProduct(@PathVariable Long id ,@RequestBody ProductRequestDto productRequestDto) throws ProductException {
+            ProductEntity updatedProduct = productService.updateProduct(id,productRequestDto);
+            ProductDataDto productDataDto = ProductDataDto
+                    .builder()
+                    .nombre(updatedProduct.getNombre())
+                    .cantidad(updatedProduct.getCantidad())
+                    .fechaIngreso(updatedProduct.getFechaIngreso())
+                    .build();
+
+            ProductResponseDto productResponseDto =
+                    ProductResponseDto
+                            .builder()
+                            .code("200")
+                            .data(productDataDto)
+                            .build();
+            return ResponseEntity.ok(productResponseDto);
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<Void> deleteProduct(@PathVariable Long id, @RequestParam Long userId) {
-        try {
-            productService.deleteProduct(id, userId);
-            return ResponseEntity.noContent().build(); // Es una forma más limpia de retornar no contenido
-        } catch (ProductException e) {
-            return ResponseEntity.badRequest().build();
-        }
+    public ResponseEntity<String> deleteProduct(@PathVariable Long id, @RequestParam String username) throws ProductException {
+        productService.deleteProduct(id, username);
+        return ResponseEntity.ok("Producto eliminado con éxito.");
     }
 
-    @GetMapping("/findAll")
-    public ResponseEntity<List<ProductEntity>> getAllProducts() {
-        List<ProductEntity> products = productService.getAllProducts();
-        return new ResponseEntity<>(products, HttpStatus.OK);
+    @GetMapping("/nombre/{nombre}")
+    public ResponseEntity<ProductResponseDto> getProductsByNombre(@PathVariable String nombre) {
+
+        ProductEntity products = productService.findByNombre(nombre);
+        ProductDataDto productDataDto = ProductDataDto
+                .builder()
+                .nombre(products.getNombre())
+                .cantidad(products.getCantidad())
+                .fechaIngreso(products.getFechaIngreso())
+                .build();
+
+        ProductResponseDto productResponseDto =
+                ProductResponseDto
+                        .builder()
+                        .code("200")
+                        .data(productDataDto)
+                        .build();
+        return ResponseEntity.ok(productResponseDto);
     }
 
-    @GetMapping("/search/name")
-    public ResponseEntity<List<ProductEntity>> searchProductsByName(@RequestParam String name) {
-        try {
-            List<ProductEntity> products = productService.searchProductsByName(name);
-            return new ResponseEntity<>(products, HttpStatus.OK);
-        } catch (ProductException e) {
-            return ResponseEntity.badRequest().body(null);
-        }
-    }
+    @GetMapping("/fecha/{fechaIngreso}")
+    public ResponseEntity<List<ProductDataDto>> getProductsByFecha(@PathVariable LocalDate fechaIngreso) {
+        List<ProductEntity> products = productService.findByFechaIngreso(fechaIngreso);
 
-    @GetMapping("/search/user")
-    public ResponseEntity<List<ProductEntity>> searchProductsByUser(@RequestParam Long userId) {
-        try {
-            List<ProductEntity> products = productService.searchProductsByUser(userId);
-            return new ResponseEntity<>(products, HttpStatus.OK);
-        } catch (ProductException e) {
-            return ResponseEntity.badRequest().body(null);
-        }
+        List<ProductDataDto> productDatumDtos = products.stream()
+                .map(product -> ProductDataDto.builder()
+                        .nombre(product.getNombre())
+                        .cantidad(product.getCantidad())
+                        .fechaIngreso(product.getFechaIngreso())
+                        .build())
+                .collect(Collectors.toList());
+
+
+        return ResponseEntity.ok(productDatumDtos);
     }
 }
+
+
+
+
+
+
+
