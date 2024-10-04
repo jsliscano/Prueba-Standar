@@ -21,4 +21,6 @@ public class UserRequestDto {
 
     private Long cargoId;
 
+    private String nombreCargo;
+
 }

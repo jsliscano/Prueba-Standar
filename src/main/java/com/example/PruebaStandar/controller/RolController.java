@@ -21,7 +21,7 @@ public class RolController {
 
     @PostMapping("/create")
     public ResponseEntity<RoleEntity> createRole(@RequestBody RolRequestDto rolRequestDto) throws ProductException {
-        RoleEntity createdRole = rolService.createRol(rolRequestDto); // Asegúrate de llamar al método correcto
+        RoleEntity createdRole = rolService.createRol(rolRequestDto);
         return new ResponseEntity<>(createdRole, HttpStatus.CREATED);
     }
 }
