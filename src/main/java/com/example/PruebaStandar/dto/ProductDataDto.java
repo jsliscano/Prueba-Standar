@@ -10,11 +10,14 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProductDataDto {
+    private Long id;
 
     private String nombre;
 
     private int cantidad;
 
     private LocalDate fechaIngreso;
+
+    private String nombreUsuario;
 
 }

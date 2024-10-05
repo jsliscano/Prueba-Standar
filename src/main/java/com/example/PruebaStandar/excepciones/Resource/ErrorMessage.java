@@ -4,8 +4,6 @@ import lombok.*;
 import org.springframework.http.HttpStatus;
 
 import java.util.Map;
-
-@Data
 @Builder
 @Getter
 @AllArgsConstructor

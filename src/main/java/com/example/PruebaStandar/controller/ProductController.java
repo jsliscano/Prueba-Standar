@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.List;
 
+import static com.example.PruebaStandar.constant.MessageGeneric.*;
+
 @AllArgsConstructor
 @RestController
 @RequestMapping("/api/products")
@@ -25,16 +27,8 @@ public class ProductController {
 
     @PostMapping("/save")
     public ResponseEntity<ProductResponseDto> createProduct(@RequestBody ProductRequestDto productRequestDto) {
-        ProductEntity createdProduct = productService.createProduct(productRequestDto);
-        ProductDataDto productDataDto = productMapper.toDataDto(createdProduct); // Mapeamos a ProductDataDto
-
-        ProductResponseDto productResponseDto = ProductResponseDto.builder()
-                .code("201") // Código de éxito
-                .message("Producto creado exitosamente")
-                .data(productDataDto)
-                .build();
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(productResponseDto);
+        ProductResponseDto productResponseService = productService.createProduct(productRequestDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(productResponseService);
     }
 
     @PutMapping("/actualizar/{id}")
@@ -56,13 +50,14 @@ public class ProductController {
         return ResponseEntity.ok(productResponseDto);
     }
 
-    @DeleteMapping("/delete/{id}")
+
+    @DeleteMapping("/delete/{id}/")
     public ResponseEntity<String> deleteProduct(@PathVariable Long id, @RequestParam String username) {
         try {
             productService.deleteProduct(id, username);
-            return ResponseEntity.ok("Producto eliminado con éxito.");
+            return ResponseEntity.ok(PRODUCTO_ELIMINADO);
         } catch (ProductException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Producto no encontrado.");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(PRODUCTO_NO_ENCONTRADO_ID);
         }
     }
 

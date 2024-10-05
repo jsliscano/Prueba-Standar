@@ -4,6 +4,7 @@ import com.example.PruebaStandar.dto.ProductDataDto;
 import com.example.PruebaStandar.dto.ProductRequestDto;
 import com.example.PruebaStandar.dto.ProductResponseDto;
 import com.example.PruebaStandar.entity.ProductEntity;
+import com.example.PruebaStandar.entity.UserEntity;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -13,20 +14,23 @@ import java.util.stream.Collectors;
 public class ProductMapper {
 
     // Mapea de ProductRequestDto a ProductEntity
-    public ProductEntity toEntity(ProductRequestDto productRequestDto) {
+    public ProductEntity toEntity(ProductRequestDto productRequestDto, UserEntity userEntity) {
         return ProductEntity.builder()
                 .nombre(productRequestDto.getNombre())
                 .cantidad(productRequestDto.getCantidad())
                 .fechaIngreso(productRequestDto.getFechaIngreso())
+                .userEntity(userEntity)
                 .build();
     }
 
     // Mapea de ProductEntity a ProductDataDto
     public ProductDataDto toDataDto(ProductEntity productEntity) {
         return ProductDataDto.builder()
+                .id(productEntity.getId())
                 .nombre(productEntity.getNombre())
                 .cantidad(productEntity.getCantidad())
                 .fechaIngreso(productEntity.getFechaIngreso())
+                .nombreUsuario(productEntity.getUserEntity().getNombre())
                 .build();
     }
 

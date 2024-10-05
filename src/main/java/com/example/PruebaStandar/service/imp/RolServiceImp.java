@@ -14,7 +14,6 @@ public class RolServiceImp implements RolService {
 
     private final RolRepository rolRepository;
 
-
     @Override
     public RoleEntity createRol(RolRequestDto rolRequestDto) throws ProductException {
         if (rolRepository.existsByNombre(rolRequestDto.getNombre())) {
