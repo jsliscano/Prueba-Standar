@@ -34,7 +34,7 @@ public class ProductServiceImp implements ProductService {
     public ProductResponseDto createProduct(ProductRequestDto productRequestDto) throws ProductException {
 
         if (productRepository.existsByNombre(productRequestDto.getNombre())) {
-            throw new ProductException(PRODUCTO_YA_EXISTE );
+            throw new ProductException(PRODUCTO_YA_EXISTE);
         }
 
         if (productRequestDto.getCantidad() < 0) {
@@ -47,7 +47,7 @@ public class ProductServiceImp implements ProductService {
 
         Optional<UserEntity> userEntity = userRespository.findByNombre(productRequestDto.getUserNameRegister());
 
-        ProductEntity productEntity = productMapper.toEntity(productRequestDto,userEntity.get());
+        ProductEntity productEntity = productMapper.toEntity(productRequestDto, userEntity.get());
         productEntity.setCreatedAt(ZonedDateTime.now());
         productEntity.setCreatedBy(productRequestDto.getUserNameRegister());
 
@@ -65,7 +65,7 @@ public class ProductServiceImp implements ProductService {
     }
 
     @Override
-    public ProductEntity updateProduct(Long id,ProductRequestDto productRequestDto) throws ProductException {
+    public ProductResponseDto updateProduct(Long id, ProductRequestDto productRequestDto) throws ProductException {
         ProductEntity existingProduct = productRepository.findById(id)
                 .orElseThrow(() -> new ProductException(PRODUCTO_NO_ENCONTRADO_ID + id));
 
@@ -77,45 +77,53 @@ public class ProductServiceImp implements ProductService {
             throw new ProductException(ERROR_FECHA_INGRESO_INVALIDA);
         }
 
-        Optional<UserEntity> userEntity = userRespository.findByNombre(productRequestDto.getUserNameRegister());
-
         existingProduct.setNombre(productRequestDto.getNombre());
         existingProduct.setCantidad(productRequestDto.getCantidad());
         existingProduct.setFechaIngreso(productRequestDto.getFechaIngreso());
         existingProduct.setUpdatedAt(ZonedDateTime.now());
         existingProduct.setUpdatedBy(productRequestDto.getUserNameRegister());
 
+        productRepository.save(existingProduct);
 
-        return productRepository.save(existingProduct);
+        ProductDataDto productDataDto = productMapper.toDataDto(existingProduct);
+
+        return ProductResponseDto
+                .builder()
+                .code("200")
+                .message(PRODUCTO_ACTUALIZADO)
+                .data(productDataDto)
+                .build();
+
     }
 
     @Override
-    public void deleteProduct(Long id, String username) throws ProductException {
+    public String deleteProduct(Long id, String username) throws ProductException {
         ProductEntity product = productRepository.findById(id)
                 .orElseThrow(() -> new ProductException(PRODUCTO_NO_ENCONTRADO_ID));
 
         if (product.getCreatedBy() != null && product.getCreatedBy().equals(username)) {
             productRepository.delete(product);
+            return PRODUCTO_ELIMINADO;
         } else {
             throw new ProductException(PERMISO_ELIMINAR_PRODUCTO);
         }
     }
 
     @Override
-    public ProductEntity findByNombre(String nombre) throws ProductException {
-        Optional<ProductEntity> product = productRepository.findByNombreContainingIgnoreCase(nombre);
-        if (product.isEmpty()) {
-            throw new ProductNotFoundException(PRODUCTO_NO_ENCONTRADO_NOMBRE + nombre);
-        }
-        return product.get();
+    public ProductDataDto findByNombre(String nombre) throws ProductException {
+        ProductEntity productEntity = productRepository.findByNombreContainingIgnoreCase(nombre)
+                .orElseThrow(() -> new ProductNotFoundException(PRODUCTO_NO_ENCONTRADO_NOMBRE + nombre));
+
+        return productMapper.toDataDto(productEntity);
     }
 
+
     @Override
-    public List<ProductEntity> findByFechaIngreso(LocalDate fechaIngreso) throws ProductNotFoundException {
+    public List<ProductDataDto> findByFechaIngreso(LocalDate fechaIngreso) throws ProductNotFoundException {
         List<ProductEntity> products = productRepository.findByFechaIngreso(fechaIngreso);
         if (products.isEmpty()) {
             throw new ProductNotFoundException(PRODUCTO_NO_ENCONTRADO_FECHA + fechaIngreso);
         }
-        return products;
+        return productMapper.toDataDtoList(products);
     }
 }
